@@ -25,8 +25,31 @@ android {
 
     buildTypes {
         all {
-            manifestPlaceholders.put("appName", "OpenTelemetry Android Demo")
-            manifestPlaceholders.put("appNameSuffix", "default")
+            val accessToken = localProperties["rum.access.token"] as String?
+            resValue("string", "rum_access_token", accessToken ?: "fakebroken")
+            manifestPlaceholders.put("appName", "OpenTelemetryDemoApp")
+
+            // Read from ~/.gradle/gradle.properties
+            val clientToken = project.findProperty("ANDROID_OTEL_DEMO_CLIENT_TOKEN") as String? ?: ""
+            buildConfigField("String", "CLIENT_TOKEN", "\"$clientToken\"")
+
+            val stagingSpansUrl = project.findProperty("ANDROID_OTEL_STAGING_SPANS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_SPANS_URL", "\"$stagingSpansUrl\"")
+
+            val stagingLogsUrl = project.findProperty("ANDROID_OTEL_STAGING_LOGS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_LOGS_URL", "\"$stagingLogsUrl\"")
+
+            val stagingMetricsUrl = project.findProperty("ANDROID_OTEL_STAGING_METRICS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_METRICS_URL", "\"$stagingMetricsUrl\"")
+
+            val productionSpansUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_SPANS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_SPANS_URL", "\"$productionSpansUrl\"")
+
+            val productionLogsUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_LOGS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_LOGS_URL", "\"$productionLogsUrl\"")
+
+            val productionMetricsUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_METRICS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_METRICS_URL", "\"$productionMetricsUrl\"")
         }
         release {
             isMinifyEnabled = true
@@ -35,6 +58,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {

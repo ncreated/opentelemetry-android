@@ -6,3 +6,5 @@ demo-app/local.properties
 **/build/
 **/.cxx/
 .kotlin/
+exploration/
+*.apk

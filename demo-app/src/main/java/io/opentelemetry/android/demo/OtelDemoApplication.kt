@@ -21,7 +21,16 @@ import io.opentelemetry.api.trace.Tracer
 
 const val TAG = "otel.demo"
 
+enum class OtelEnvironment {
+    STAGING,
+    PRODUCTION,
+    LOCALHOST
+}
+
 class OtelDemoApplication : Application() {
+
+    // Change this to switch between environments
+    private val environment = OtelEnvironment.PRODUCTION
 
     @OptIn(Incubating::class)
     @SuppressLint("RestrictedApi")
@@ -30,16 +39,62 @@ class OtelDemoApplication : Application() {
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
 
-        // 10.0.2.2 is a special binding to the host running the emulator
         try {
             rum = OpenTelemetryRumInitializer.initialize(
                 context = this@OtelDemoApplication,
                 configuration = {
                     httpExport {
-                        baseUrl = "http://10.0.2.2:4318"
+                        when (environment) {
+                            OtelEnvironment.STAGING -> {
+                                spans {
+                                    url = BuildConfig.STAGING_SPANS_URL
+                                    headers = mapOf(
+                                        "dd-api-key" to BuildConfig.CLIENT_TOKEN,
+                                        "dd-otlp-source" to "datadog"
+                                    )
+                                }
+                                logs {
+                                    url = BuildConfig.STAGING_LOGS_URL
+                                    headers = mapOf("dd-api-key" to BuildConfig.CLIENT_TOKEN)
+                                }
+                                metrics {
+                                    url = BuildConfig.STAGING_METRICS_URL
+                                    headers = mapOf("dd-api-key" to BuildConfig.CLIENT_TOKEN)
+                                }
+                            }
+                            OtelEnvironment.PRODUCTION -> {
+                                spans {
+                                    url = BuildConfig.PRODUCTION_SPANS_URL
+                                    headers = mapOf(
+                                        "dd-api-key" to BuildConfig.CLIENT_TOKEN,
+                                        "dd-otlp-source" to "datadog"
+                                    )
+                                }
+                                logs {
+                                    url = BuildConfig.PRODUCTION_LOGS_URL
+                                    headers = mapOf("dd-api-key" to BuildConfig.CLIENT_TOKEN)
+                                }
+                                metrics {
+                                    url = BuildConfig.PRODUCTION_METRICS_URL
+                                    headers = mapOf("dd-api-key" to BuildConfig.CLIENT_TOKEN)
+                                }
+                            }
+                            // 10.0.2.2 is a special binding to the host running the emulator:
+                            OtelEnvironment.LOCALHOST -> {
+                                spans {
+                                    url = "http://10.0.2.2:8000/v1/spans"
+                                }
+                                logs {
+                                    url = "http://10.0.2.2:8000/v1/logs"
+                                }
+                                metrics {
+                                    url = "http://10.0.2.2:8000/v1/metrics"
+                                }
+                            }
+                        }
                     }
                     globalAttributes {
-                        Attributes.of(stringKey("toolkit"), "jetpack compose")
+                        Attributes.of(stringKey("my-custom-attr"), "the value 42")
                     }
                     instrumentations {
                         suppressing (
