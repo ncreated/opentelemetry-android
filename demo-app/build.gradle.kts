@@ -6,6 +6,7 @@ plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
+    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.17.7"
 }
 
 val localProperties = Properties()
@@ -32,8 +33,29 @@ android {
         all {
             val accessToken = localProperties["rum.access.token"] as String?
             resValue("string", "rum_access_token", accessToken ?: "fakebroken")
-            manifestPlaceholders.put("appName", "OpenTelemetry Android Demo")
-            manifestPlaceholders.put("appNameSuffix", "default")
+            manifestPlaceholders.put("appName", "OpenTelemetryDemoApp")
+
+            // Read from ~/.gradle/gradle.properties
+            val clientToken = project.findProperty("ANDROID_OTEL_DEMO_CLIENT_TOKEN") as String? ?: ""
+            buildConfigField("String", "CLIENT_TOKEN", "\"$clientToken\"")
+
+            val stagingSpansUrl = project.findProperty("ANDROID_OTEL_STAGING_SPANS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_SPANS_URL", "\"$stagingSpansUrl\"")
+
+            val stagingLogsUrl = project.findProperty("ANDROID_OTEL_STAGING_LOGS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_LOGS_URL", "\"$stagingLogsUrl\"")
+
+            val stagingMetricsUrl = project.findProperty("ANDROID_OTEL_STAGING_METRICS_URL") as String? ?: ""
+            buildConfigField("String", "STAGING_METRICS_URL", "\"$stagingMetricsUrl\"")
+
+            val productionSpansUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_SPANS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_SPANS_URL", "\"$productionSpansUrl\"")
+
+            val productionLogsUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_LOGS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_LOGS_URL", "\"$productionLogsUrl\"")
+
+            val productionMetricsUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_METRICS_URL") as String? ?: ""
+            buildConfigField("String", "PRODUCTION_METRICS_URL", "\"$productionMetricsUrl\"")
         }
         release {
             isMinifyEnabled = true
@@ -42,6 +64,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     val javaVersion = JavaVersion.VERSION_11
     compileOptions {
@@ -77,6 +100,11 @@ dependencies {
     implementation("io.opentelemetry.android:android-agent")    //parent dir
     implementation("io.opentelemetry.android.instrumentation:compose-click")
     implementation("io.opentelemetry.android.instrumentation:sessions")
+
+    // OkHttp instrumentation for network request example
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
+    implementation("io.opentelemetry.android.instrumentation:okhttp3-library")
+    byteBuddy("io.opentelemetry.android.instrumentation:okhttp3-agent")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

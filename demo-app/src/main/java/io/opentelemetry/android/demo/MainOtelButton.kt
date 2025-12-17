@@ -27,10 +27,10 @@ import io.opentelemetry.api.trace.SpanKind
 fun MainOtelButton(icon: Painter,
                    clickCounter: LongCounter? = OtelDemoApplication.counter("logo.clicks")) {
     Row {
-        Spacer(modifier = Modifier.height(5.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Button(
             onClick = { generateClickEvent(clickCounter) },
-            modifier = Modifier.padding(20.dp).semantics{
+            modifier = Modifier.padding(8.dp).semantics{
                 onClick("MainOtelButton") { true }
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
@@ -39,8 +39,8 @@ fun MainOtelButton(icon: Painter,
                     painter = icon,
                     contentDescription = null,
                     Modifier
-                        .width(150.dp)
-                        .padding(30.dp),
+                        .width(80.dp)
+                        .padding(12.dp),
                 )
             },
         )
