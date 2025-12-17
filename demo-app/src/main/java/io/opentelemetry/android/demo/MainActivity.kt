@@ -10,6 +10,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_MESSAGE
+import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_STACKTRACE
+import io.opentelemetry.semconv.ExceptionAttributes.EXCEPTION_TYPE
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -39,9 +43,17 @@ import androidx.core.content.ContextCompat
 import io.opentelemetry.android.demo.about.AboutActivity
 import io.opentelemetry.android.demo.theme.DemoAppTheme
 import io.opentelemetry.android.demo.shop.ui.AstronomyShopActivity
+import io.opentelemetry.api.logs.Severity
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import java.io.IOException
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<DemoViewModel>()
+    private val httpClient = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +110,18 @@ class MainActivity : ComponentActivity() {
                         LauncherButton(text = "Learn more", onClick = {
                             context.startActivity(Intent(this@MainActivity, AboutActivity::class.java))
                         })
+                        LauncherButton(text = "Test Network", onClick = {
+                            makeHttpBinRequest()
+                        })
+                        LauncherButton(text = "Test Crash", onClick = {
+                            triggerCrash()
+                        })
+                        LauncherButton(text = "Test Regular Logs", onClick = {
+                            triggerRegularLogs()
+                        })
+                        LauncherButton(text = "Test Caught Exception", onClick = {
+                            triggerCaughtException()
+                        })
 
                     }
                 }
@@ -123,6 +147,126 @@ class MainActivity : ComponentActivity() {
                 arrayOf(phoneStatePermission),
                 100
             )
+        }
+    }
+
+    /**
+     * Makes a simple HTTP request to httpbin.org to demonstrate OkHttp instrumentation.
+     * This request will be automatically traced by the OkHttp instrumentation.
+     */
+    private fun makeHttpBinRequest() {
+        val request = Request.Builder()
+            .url("https://httpbin.org/json")
+            .build()
+
+        httpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e(TAG, "HTTPBin request failed", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (response.isSuccessful) {
+                        val body = response.body?.string()
+                        Log.d(TAG, "HTTPBin response: ${body?.take(100)}...")
+                    } else {
+                        Log.e(TAG, "HTTPBin request unsuccessful: ${response.code}")
+                    }
+                }
+            }
+        })
+    }
+
+    /**
+     * Triggers an uncaught exception to demonstrate the crash instrumentation.
+     * This will generate a device.crash event with exception details in OpenTelemetry.
+     */
+    private fun triggerCrash() {
+        Log.w(TAG, "Intentionally triggering a crash for testing...")
+        throw RuntimeException("Test crash triggered from demo app - this is intentional!")
+    }
+
+    /**
+     * Demonstrates sending regular logs with different severity levels using OpenTelemetry logger API.
+     * This creates log events for each severity level to test the logging functionality.
+     */
+    private fun triggerRegularLogs() {
+        val rum = OtelDemoApplication.rum
+        if (rum != null) {
+            val logger = rum.openTelemetry.logsBridge
+                .loggerBuilder("io.opentelemetry.demo.logs")
+                .build()
+
+            // Send logs with each severity level
+            logger.logRecordBuilder()
+                .setSeverity(Severity.TRACE)
+                .setBody("This is a TRACE level log message")
+                .emit()
+
+            logger.logRecordBuilder()
+                .setSeverity(Severity.DEBUG)
+                .setBody("This is a DEBUG level log message")
+                .emit()
+
+            logger.logRecordBuilder()
+                .setSeverity(Severity.INFO)
+                .setBody("This is an INFO level log message")
+                .emit()
+
+            logger.logRecordBuilder()
+                .setSeverity(Severity.WARN)
+                .setBody("This is a WARN level log message")
+                .emit()
+
+            logger.logRecordBuilder()
+                .setSeverity(Severity.ERROR)
+                .setBody("This is an ERROR level log message")
+                .emit()
+
+            logger.logRecordBuilder()
+                .setSeverity(Severity.FATAL)
+                .setBody("This is a FATAL level log message")
+                .emit()
+
+            Log.d(TAG, "Sent logs with all severity levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL")
+        } else {
+            Log.e(TAG, "RUM not initialized, cannot send logs")
+        }
+    }
+
+    /**
+     * Demonstrates how to catch and track an exception using OpenTelemetry logger API.
+     * This creates a structured log event with exception attributes using the OTel logger.
+     */
+    private fun triggerCaughtException() {
+        try {
+            // Simulate some operation that throws an exception
+            throw IllegalStateException("Test caught exception - demonstrating exception tracking via OTel logger")
+        } catch (e: Exception) {
+            // Get the OpenTelemetry logger
+            val rum = OtelDemoApplication.rum
+            if (rum != null) {
+                val logger = rum.openTelemetry.logsBridge
+                    .loggerBuilder("io.opentelemetry.demo.exception")
+                    .build()
+
+                // Build exception attributes
+                val attributes = Attributes.builder()
+                    .put(EXCEPTION_TYPE, e.javaClass.name)
+                    .put(EXCEPTION_MESSAGE, e.message ?: "")
+                    .put(EXCEPTION_STACKTRACE, e.stackTraceToString())
+                    .build()
+
+                // Create and emit a log record with exception details
+                logger.logRecordBuilder()
+                    .setSeverity(Severity.ERROR)
+                    .setAllAttributes(attributes)
+                    .emit()
+
+                Log.d(TAG, "Caught exception tracked successfully as OTel log event")
+            } else {
+                Log.e(TAG, "RUM not initialized, cannot track exception")
+            }
         }
     }
 }
