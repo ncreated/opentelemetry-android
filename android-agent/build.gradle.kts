@@ -5,6 +5,15 @@ plugins {
 
 android {
     namespace = "io.opentelemetry.android.agent"
+
+    defaultConfig {
+        val rumApplicationId = project.findProperty("ANDROID_OTEL_RUM_APPLICATION_ID") as String? ?: ""
+        buildConfigField("String", "RUM_APPLICATION_ID", "\"$rumApplicationId\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
