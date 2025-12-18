@@ -20,6 +20,7 @@ import io.opentelemetry.android.session.SessionProvider
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter
+import io.opentelemetry.sdk.resources.Resource
 
 @OptIn(Incubating::class)
 object OpenTelemetryRumInitializer {
@@ -83,7 +84,14 @@ object OpenTelemetryRumInitializer {
                     .setHeaders(metricsEndpoint::getHeaders)
                     .setCompression(metricsEndpoint.getCompression().getUpstreamName())
                     .build()
-            }.build()
+            }
+            .mergeResource(
+                Resource
+                    .builder()
+                    .put("datadog.application_id", BuildConfig.RUM_APPLICATION_ID)
+                    .build()
+            )
+            .build()
     }
 
     private fun Compression.getUpstreamName(): String =
