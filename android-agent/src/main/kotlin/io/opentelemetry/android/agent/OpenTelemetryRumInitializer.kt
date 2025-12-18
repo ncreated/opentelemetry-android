@@ -71,7 +71,8 @@ object OpenTelemetryRumInitializer {
                         .toBuilder()
                         .apply {
                             cfg.resourceAction(this)
-                        }.build(),
+                        }.put("datadog.application_id", BuildConfig.RUM_APPLICATION_ID)
+                        .build(),
                 )
                 setClock(cfg.clock)
 
