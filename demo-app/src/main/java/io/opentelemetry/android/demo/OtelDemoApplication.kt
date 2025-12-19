@@ -43,6 +43,9 @@ class OtelDemoApplication : Application() {
             rum = OpenTelemetryRumInitializer.initialize(
                 context = this@OtelDemoApplication,
                 configuration = {
+                    diskBuffering {
+                        enabled(false)
+                    }
                     httpExport {
                         when (environment) {
                             OtelEnvironment.STAGING -> {
