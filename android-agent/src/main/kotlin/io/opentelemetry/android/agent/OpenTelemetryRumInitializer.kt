@@ -88,7 +88,7 @@ object OpenTelemetryRumInitializer {
             .mergeResource(
                 Resource
                     .builder()
-                    .put("datadog.application_id", BuildConfig.RUM_APPLICATION_ID)
+                    .put("datadog.application.id", BuildConfig.RUM_APPLICATION_ID)
                     .build()
             )
             .build()
