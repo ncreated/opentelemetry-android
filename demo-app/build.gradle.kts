@@ -1,10 +1,17 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.datadog.gradle.plugin.InstrumentationMode
+
+buildscript {
+    dependencies {
+        classpath("com.datadoghq:dd-sdk-android-gradle-plugin:1.22.0")
+    }
+}
 
 plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.byteBuddy)
-    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.18.0"
+    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.22.0"
 }
 
 android {
@@ -75,6 +82,10 @@ android {
     }
 }
 
+datadog {
+    composeInstrumentation = InstrumentationMode.AUTO
+}
+
 dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.appcompat)
@@ -91,6 +102,7 @@ dependencies {
     // Datadog RUM SDK
     implementation("com.datadoghq:dd-sdk-android-rum:3.6.0")
     implementation("com.datadoghq:dd-sdk-android-okhttp:3.6.0")
+    implementation("com.datadoghq:dd-sdk-android-compose:3.6.0")
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
