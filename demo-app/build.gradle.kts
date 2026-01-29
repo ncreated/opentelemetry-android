@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.17.7"
+    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.18.0"
 }
 
 val localProperties = Properties()
@@ -18,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "io.opentelemetry.android.demo"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -92,6 +93,10 @@ dependencies {
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.material.icons.core)
+
+    // Datadog RUM SDK
+    implementation("com.datadoghq:dd-sdk-android-rum:3.6.0")
+    implementation("com.datadoghq:dd-sdk-android-okhttp:3.6.0")
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 
