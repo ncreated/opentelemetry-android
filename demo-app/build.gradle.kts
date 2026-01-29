@@ -4,6 +4,7 @@ plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.byteBuddy)
+    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.18.0"
 }
 
 android {
@@ -86,6 +87,10 @@ dependencies {
     implementation(libs.opentelemetry.api.incubator)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.material.icons.core)
+
+    // Datadog RUM SDK
+    implementation("com.datadoghq:dd-sdk-android-rum:3.6.0")
+    implementation("com.datadoghq:dd-sdk-android-okhttp:3.6.0")
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 

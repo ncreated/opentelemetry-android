@@ -50,10 +50,14 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import com.datadog.android.okhttp.DatadogInterceptor
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<DemoViewModel>()
-    private val httpClient = OkHttpClient()
+    private val tracedHosts = listOf("httpbin.org")
+    private val httpClient = OkHttpClient.Builder()
+        .addInterceptor(DatadogInterceptor.Builder(tracedHosts).build())
+        .build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

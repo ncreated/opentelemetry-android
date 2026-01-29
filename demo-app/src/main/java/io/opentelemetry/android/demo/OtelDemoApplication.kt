@@ -18,6 +18,13 @@ import io.opentelemetry.api.logs.LogRecordBuilder
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.api.metrics.LongCounter
 import io.opentelemetry.api.trace.Tracer
+import com.datadog.android.Datadog
+import com.datadog.android.DatadogSite
+import com.datadog.android.core.configuration.Configuration
+import com.datadog.android.privacy.TrackingConsent
+import com.datadog.android.rum.Rum
+import com.datadog.android.rum.RumConfiguration
+import com.datadog.android.rum.tracking.FragmentViewTrackingStrategy
 
 const val TAG = "otel.demo"
 
@@ -36,6 +43,9 @@ class OtelDemoApplication : Application() {
     @SuppressLint("RestrictedApi")
     override fun onCreate() {
         super.onCreate()
+
+        Log.i(TAG, "Initializing Datadog RUM")
+        initializeDatadog()
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
 
@@ -115,6 +125,52 @@ class OtelDemoApplication : Application() {
         } catch (e: Exception) {
             Log.e(TAG, "Oh no!", e)
         }
+    }
+
+    private fun initializeDatadog() {
+        val environment = when (this.environment) {
+            OtelEnvironment.PRODUCTION -> "production"
+            OtelEnvironment.STAGING -> "staging"
+            OtelEnvironment.LOCALHOST -> "localhost"
+        }
+        val variant = BuildConfig.BUILD_TYPE
+
+        val datadogSite = if (this.environment == OtelEnvironment.STAGING) {
+            DatadogSite.STAGING
+        } else {
+            DatadogSite.US1
+        }
+
+        val config = Configuration.Builder(
+            clientToken = BuildConfig.CLIENT_TOKEN,
+            env = environment,
+            variant = variant
+        )
+        .useSite(datadogSite)
+        .build()
+
+        Datadog.initialize(
+            context = this,
+            configuration = config,
+            trackingConsent = TrackingConsent.GRANTED
+        )
+
+        initializeDatadogRUMFeature()
+    }
+
+    private fun initializeDatadogRUMFeature() {
+        val sessionSampleRate: Float = 100f
+        val rumConfigBuilder = RumConfiguration.Builder(io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID)
+            .useViewTrackingStrategy(FragmentViewTrackingStrategy(true))
+            .trackUserInteractions()
+            .setSessionSampleRate(sessionSampleRate)
+
+        if (this.environment == OtelEnvironment.LOCALHOST) {
+            rumConfigBuilder.useCustomEndpoint("http://10.0.2.2:8000")
+        }
+
+        val rumConfig = rumConfigBuilder.build()
+        Rum.enable(rumConfig)
     }
 
     companion object {
