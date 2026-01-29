@@ -24,6 +24,12 @@ class OpenTelemetryConfiguration internal constructor(
     internal val diskBufferingConfig = DiskBufferingConfigurationSpec()
     internal val instrumentations = InstrumentationConfiguration(rumConfig)
 
+    /**
+     * An ID set on both OTel and Datadog RUM sessions and used to find
+     * the same session from both SDKs.
+     */
+    var correlationId: String = ""
+
     init {
         diskBuffering {}
     }

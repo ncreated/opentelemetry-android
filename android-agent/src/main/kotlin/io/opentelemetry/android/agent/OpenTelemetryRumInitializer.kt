@@ -89,6 +89,7 @@ object OpenTelemetryRumInitializer {
                 Resource
                     .builder()
                     .put("datadog.application.id", BuildConfig.RUM_APPLICATION_ID)
+                    .put("datadog.correlation.id", cfg.correlationId)
                     .build()
             )
             .build()
