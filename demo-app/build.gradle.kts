@@ -1,13 +1,20 @@
 import java.io.FileInputStream
 import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.datadog.gradle.plugin.InstrumentationMode
+
+buildscript {
+    dependencies {
+        classpath("com.datadoghq:dd-sdk-android-gradle-plugin:1.22.0")
+    }
+}
 
 plugins {
     alias(rootLibs.plugins.androidApp)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.17.7"
-    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.18.0"
+    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.22.0"
 }
 
 val localProperties = Properties()
@@ -81,6 +88,10 @@ android {
     }
 }
 
+datadog {
+    composeInstrumentation = InstrumentationMode.AUTO
+}
+
 dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.appcompat)
@@ -97,6 +108,7 @@ dependencies {
     // Datadog RUM SDK
     implementation("com.datadoghq:dd-sdk-android-rum:3.6.0")
     implementation("com.datadoghq:dd-sdk-android-okhttp:3.6.0")
+    implementation("com.datadoghq:dd-sdk-android-compose:3.6.0")
 
     coreLibraryDesugaring(libs.desugarJdkLibs)
 

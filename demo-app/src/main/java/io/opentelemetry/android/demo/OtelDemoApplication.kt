@@ -24,6 +24,7 @@ import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.tracking.FragmentViewTrackingStrategy
+import com.datadog.android.compose.enableComposeActionTracking
 
 const val TAG = "otel.demo"
 
@@ -153,6 +154,7 @@ class OtelDemoApplication : Application() {
         val rumConfigBuilder = RumConfiguration.Builder(io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID)
             .useViewTrackingStrategy(FragmentViewTrackingStrategy(true))
             .trackUserInteractions()
+            .enableComposeActionTracking()
             .setSessionSampleRate(sessionSampleRate)
 
         if (this.environment == OtelEnvironment.LOCALHOST) {
