@@ -36,6 +36,16 @@ class OpenTelemetryConfiguration internal constructor(
     internal var resourceAction: ResourceBuilder.() -> Unit = {}
 
     /**
+     * An ID set on both OTel and Datadog RUM sessions and used to find
+     * the same session from both SDKs.
+     */
+    var correlationId: String = ""
+
+    init {
+        diskBuffering {}
+    }
+
+    /**
      * Disable tracing in the SDK by providing no-op implementations that don't incur overhead even if instrumentation creates spans
      */
     fun disableTracing() {

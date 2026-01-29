@@ -26,6 +26,7 @@ import com.datadog.android.rum.Rum
 import com.datadog.android.rum.RumConfiguration
 import com.datadog.android.rum.tracking.FragmentViewTrackingStrategy
 import com.datadog.android.compose.enableComposeActionTracking
+import com.datadog.android.rum.GlobalRumMonitor
 
 const val TAG = "otel.demo"
 
@@ -45,8 +46,12 @@ class OtelDemoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        // Generate a shared correlation ID for both OTel and Datadog RUM
+        // This is used to find the same session from Datadog RUM and OTel.
+        val correlationId = java.util.UUID.randomUUID().toString()
+
         Log.i(TAG, "Initializing Datadog RUM")
-        initializeDatadog()
+        initializeDatadog(correlationId)
 
         Log.i(TAG, "Initializing the opentelemetry-android-agent")
 
@@ -54,6 +59,7 @@ class OtelDemoApplication : Application() {
             rum = OpenTelemetryRumInitializer.initialize(
                 context = this@OtelDemoApplication,
                 configuration = {
+                    this.correlationId = correlationId
                     diskBuffering {
                         enabled(false)
                     }
@@ -128,7 +134,7 @@ class OtelDemoApplication : Application() {
         }
     }
 
-    private fun initializeDatadog() {
+    private fun initializeDatadog(correlationId: String) {
         val environment = when (this.environment) {
             OtelEnvironment.PRODUCTION -> "production"
             OtelEnvironment.STAGING -> "staging"
@@ -156,10 +162,10 @@ class OtelDemoApplication : Application() {
             trackingConsent = TrackingConsent.GRANTED
         )
 
-        initializeDatadogRUMFeature()
+        initializeDatadogRUMFeature(correlationId)
     }
 
-    private fun initializeDatadogRUMFeature() {
+    private fun initializeDatadogRUMFeature(correlationId: String) {
         val sessionSampleRate: Float = 100f
         val rumConfigBuilder = RumConfiguration.Builder(io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID)
             .useViewTrackingStrategy(FragmentViewTrackingStrategy(true))
@@ -173,6 +179,8 @@ class OtelDemoApplication : Application() {
 
         val rumConfig = rumConfigBuilder.build()
         Rum.enable(rumConfig)
+
+        GlobalRumMonitor.get().addAttribute("correlation.id", correlationId)
     }
 
     companion object {
