@@ -58,7 +58,7 @@ android {
             buildConfigField("String", "PRODUCTION_METRICS_URL", "\"$productionMetricsUrl\"")
         }
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             signingConfig = signingConfigs["debug"]
         }
     }
