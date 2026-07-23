@@ -46,6 +46,8 @@ class OtelDemoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        logBuildConfig()
+
         // Generate a shared correlation ID for both OTel and Datadog RUM
         // This is used to find the same session from Datadog RUM and OTel.
         val correlationId = java.util.UUID.randomUUID().toString()
@@ -134,6 +136,18 @@ class OtelDemoApplication : Application() {
         }
     }
 
+    private fun logBuildConfig() {
+        Log.d(TAG, "environment=$environment")
+        Log.d(TAG, "CLIENT_TOKEN=${BuildConfig.CLIENT_TOKEN}")
+        Log.d(TAG, "STAGING_SPANS_URL=${BuildConfig.STAGING_SPANS_URL}")
+        Log.d(TAG, "STAGING_LOGS_URL=${BuildConfig.STAGING_LOGS_URL}")
+        Log.d(TAG, "STAGING_METRICS_URL=${BuildConfig.STAGING_METRICS_URL}")
+        Log.d(TAG, "PRODUCTION_SPANS_URL=${BuildConfig.PRODUCTION_SPANS_URL}")
+        Log.d(TAG, "PRODUCTION_LOGS_URL=${BuildConfig.PRODUCTION_LOGS_URL}")
+        Log.d(TAG, "PRODUCTION_METRICS_URL=${BuildConfig.PRODUCTION_METRICS_URL}")
+        Log.d(TAG, "RUM_APPLICATION_ID=${io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID}")
+    }
+
     private fun initializeDatadog(correlationId: String) {
         val environment = when (this.environment) {
             OtelEnvironment.PRODUCTION -> "production"
@@ -155,6 +169,8 @@ class OtelDemoApplication : Application() {
         )
         .useSite(datadogSite)
         .build()
+
+        Datadog.setVerbosity(android.util.Log.VERBOSE)
 
         Datadog.initialize(
             context = this,

@@ -100,14 +100,14 @@ class MainActivity : ComponentActivity() {
                                     },
                             )
                         }
-                        SessionId(viewModel.sessionIdState)
+                        SessionId(
+                            viewModel.sessionIdState,
+                            applicationId = io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID,
+                        )
                         MainOtelButton(
                             painterResource(id = R.drawable.otel_icon),
                         )
                         val context = LocalContext.current
-                        LauncherButton(text = "OkHttp instrumentation", onClick = {
-                            context.startActivity(Intent(this@MainActivity, OkHttpDemoActivity::class.java))
-                        })
                         LauncherButton(text = "Go shopping", onClick = {
                             context.startActivity(Intent(this@MainActivity, AstronomyShopActivity::class.java))
                         })
@@ -119,6 +119,9 @@ class MainActivity : ComponentActivity() {
                         })
                         LauncherButton(text = "Test Crash", onClick = {
                             triggerCrash()
+                        })
+                        LauncherButton(text = "OkHttp instrumentation", onClick = {
+                            context.startActivity(Intent(this@MainActivity, OkHttpDemoActivity::class.java))
                         })
                         LauncherButton(text = "Test Regular Logs", onClick = {
                             triggerRegularLogs()
