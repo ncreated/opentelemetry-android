@@ -33,8 +33,6 @@ android {
 
     buildTypes {
         all {
-            val accessToken = localProperties["rum.access.token"] as String?
-            resValue("string", "rum_access_token", accessToken ?: "fakebroken")
             manifestPlaceholders.put("appName", "OpenTelemetryDemoApp")
 
             // Read from ~/.gradle/gradle.properties
@@ -83,7 +81,11 @@ android {
 }
 
 datadog {
-    composeInstrumentation = InstrumentationMode.AUTO
+    // AUTO is incompatible with Kotlin 2.4.10's compiler plugin API (NoSuchMethodError in
+    // DatadogPluginRegistrar). Compose click tracking is already covered by OTel's own
+    // compose-click instrumentation, so leave this disabled until dd-sdk-android-gradle-plugin
+    // ships a build compatible with this Kotlin version.
+    composeInstrumentation = InstrumentationMode.DISABLE
 }
 
 dependencies {

@@ -8,7 +8,9 @@ package io.opentelemetry.android.demo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -24,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
-fun SessionId(sessionId: StateFlow<String>) {
+fun SessionId(sessionId: StateFlow<String>, applicationId: String) {
     val cardColors = CardColors(
         containerColor = Color(0xFFD9D9D9), contentColor = Color(0xFFF5A800),
         disabledContentColor = Color.Black, disabledContainerColor = Color.Black
@@ -36,13 +38,19 @@ fun SessionId(sessionId: StateFlow<String>) {
                 modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 25.dp),
+                    .padding(vertical = 10.dp),
                 Arrangement.Center,
             ) {
-                CenterText(text = "session.id", fontSize = 18.sp, color = Color.Black)
+                CenterText(text = "session.id", fontSize = 13.sp, color = Color.Black)
                 //TODO: Fix me -- this selection doesn't work
-                SelectionContainer(modifier = Modifier.padding(top = 15.dp)) {
-                    CenterText(text = sessionId.collectAsState().value, fontSize = 14.sp,
+                SelectionContainer(modifier = Modifier.padding(top = 4.dp)) {
+                    CenterText(text = sessionId.collectAsState().value, fontSize = 11.sp,
+                        selectable = true, color = Color(0xFF425CC7))
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                CenterText(text = "application.id", fontSize = 13.sp, color = Color.Black)
+                SelectionContainer(modifier = Modifier.padding(top = 4.dp)) {
+                    CenterText(text = applicationId, fontSize = 11.sp,
                         selectable = true, color = Color(0xFF425CC7))
                 }
             }
