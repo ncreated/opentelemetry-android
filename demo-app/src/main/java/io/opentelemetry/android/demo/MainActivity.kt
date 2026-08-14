@@ -61,6 +61,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // SDKs are already initialized by LaunchActivity by the time this Activity is created.
+        val rumApplicationId = OtelDemoApplication.config?.rumApplicationId
+            ?: io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID
+
         enableEdgeToEdge()
         setContent {
             DemoAppTheme {
@@ -102,7 +107,7 @@ class MainActivity : ComponentActivity() {
                         }
                         SessionId(
                             viewModel.sessionIdState,
-                            applicationId = io.opentelemetry.android.agent.BuildConfig.RUM_APPLICATION_ID,
+                            applicationId = rumApplicationId,
                         )
                         MainOtelButton(
                             painterResource(id = R.drawable.otel_icon),

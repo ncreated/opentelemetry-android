@@ -56,6 +56,9 @@ android {
 
             val productionMetricsUrl = project.findProperty("ANDROID_OTEL_PRODUCTION_METRICS_URL") as String? ?: ""
             buildConfigField("String", "PRODUCTION_METRICS_URL", "\"$productionMetricsUrl\"")
+
+            val useDatadogSdk = project.findProperty("ANDROID_OTEL_DEMO_USE_DATADOG_SDK") as String? ?: "true"
+            buildConfigField("boolean", "USE_DATADOG_SDK", useDatadogSdk)
         }
         release {
             isMinifyEnabled = false
