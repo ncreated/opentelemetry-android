@@ -271,6 +271,7 @@ class MainActivity : ComponentActivity() {
 
                 // Create and emit a log record with exception details
                 logger.logRecordBuilder()
+                    .setEventName("exception")
                     .setSeverity(Severity.ERROR)
                     .setAllAttributes(attributes)
                     .emit()
